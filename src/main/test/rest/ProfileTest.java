@@ -17,7 +17,6 @@ import static org.hamcrest.Matchers.*;
 public class ProfileTest{
 	
 	private final int MAX_NAME_SIZE=30;
-	private final int MAX_STATE_SIZE=22;
 	private final int MAX_GENDER_SIZE=1;
 	private final int MAX_CONTACT_SIZE=13;
 	private final int MAX_COUNTRY_SIZE=3;
@@ -48,7 +47,7 @@ public class ProfileTest{
 	}
 	
 	@Test
-	public void submitInvalidProfile(){
+	public void submitInvalidInsertProfile(){
 		Response resp = cookieSet
 		.contentType(ContentType.JSON)
 		.body("{"
@@ -110,6 +109,75 @@ public class ProfileTest{
 						+ "\"state\":\"12346\""
 						+ "}")
 				.when().put("http://localhost:9000/user/profile");
+		//Check contact number
+		resp.then().body("errors", hasItems(
+				"Contact No is invalid only numbers allowed"
+				));
+	}
+	
+	@Test
+	public void submitInvalidUpdateProfile(){
+		Response resp = cookieSet
+		.contentType(ContentType.JSON)
+		.body("{"
+				+ "\"firstName\":\"\", "
+				+ "\"midName\":\"abc\", "
+				+ "\"lastName\":\"\", "
+				+ "\"gender\":\"\", "
+				+ "\"contactNo\":\"\", "
+				+ "\"country\":\"\", "
+				+ "\"state\":\"\""
+				+ "}")
+		.when().post("http://localhost:9000/user/profile");
+		
+		//Check minimum
+		resp.then().body("errors", hasItems(
+				"First Name requires minimum of  2 characters",
+				"First Name cannot be blank",
+				"Last Name requires minimum of  2 characters",
+				"Last Name cannot be blank",
+				"Gender requires minimum of  1 characters",
+				"Gender cannot be blank",
+				"Country requires minimum of  2 characters",
+				"Country cannot be blank",
+				"State requires minimum of  2 characters",
+				"State cannot be blank"
+				));
+		
+		resp = cookieSet
+				.contentType(ContentType.JSON)
+				.body("{"
+						+ "\"firstName\":\""+new String(new char[MAX_NAME_SIZE+1]).replace('\0', 'a')+"\", "
+						+ "\"midName\":\""+new String(new char[MAX_NAME_SIZE+1]).replace('\0', 'a')+"\", "
+						+ "\"lastName\":\""+new String(new char[MAX_NAME_SIZE+1]).replace('\0', 'a')+"\", "
+						+ "\"gender\":\""+new String(new char[MAX_GENDER_SIZE+1]).replace('\0', 'a')+"\", "
+						+ "\"contactNo\":\""+new String(new char[MAX_CONTACT_SIZE+1]).replace('\0', 'a')+"\", "
+						+ "\"country\":\""+new String(new char[MAX_COUNTRY_SIZE+1]).replace('\0', 'a')+"\", "
+						+ "\"state\":\"12345\""
+						+ "}")
+				.when().post("http://localhost:9000/user/profile");
+
+		//Check maximum - found bug that last obj cannot check maximum.
+		resp.then().body("errors", hasItems(
+				"First Name requires maximum of  30 characters",
+				"Middle Name requires maximum of  30 characters",
+				"Last Name requires maximum of  30 characters",
+				"Contact No requires maximum of  13 characters",
+				"Country requires maximum of  3 characters"
+				));
+		
+		resp = cookieSet
+				.contentType(ContentType.JSON)
+				.body("{"
+						+ "\"firstName\":\"123\", "
+						+ "\"midName\":\"123\", "
+						+ "\"lastName\":\"123\", "
+						+ "\"gender\":\"123\", "
+						+ "\"contactNo\":\"abcded43\", "
+						+ "\"country\":\"123\", "
+						+ "\"state\":\"12346\""
+						+ "}")
+				.when().post("http://localhost:9000/user/profile");
 		//Check contact number
 		resp.then().body("errors", hasItems(
 				"Contact No is invalid only numbers allowed"
