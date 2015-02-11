@@ -236,13 +236,19 @@ public class CalendarTest {
 			
 		}
 		
-		cookieSet
+		obtainCookie()
 		.contentType(ContentType.JSON)
 		.body(response)
 		.when().post("/tools/calendarconf")
 		.then().body("success",is("OK"));
 	}
 	
+	@Test
+	public void checkReservationList(){
+		cookieSet.get("/tools/reservationlist").then().statusCode(200);
+		cookieSet.get("/tools/usersinreservation/54a4a63072014e30c18e6d05").then().statusCode(200); //invalid information
+	}
+		
 	public String checkCookie(){
 		try{
 			Thread.sleep(2000);
