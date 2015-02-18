@@ -45,7 +45,7 @@ public class ReportTest {
 	
 	@Test
 	public void generateReport(){
-		cookieSet.when().get("/report/gen").then()
+		cookieSet.when().post("/report/gen").then()
 		.body("success", is("OK"));
 		
 		System.out.println("Please check on reporting generated in your test folder!.");
